@@ -1,0 +1,24 @@
+#app{
+    position: absolute;
+    left: 40px;
+    top: 20px
+}
+
+#person_form {
+    width: 25%;
+    position: absolute;
+    left: 20px;
+    display: inline-block;
+}
+
+#persons_list {
+    width: 75%;
+    position: absolute;
+    left: 26%;
+    display: inline-block;
+}
+
+.input-small{
+    width: 210px;
+    margin-bottom: 5px;
+}
