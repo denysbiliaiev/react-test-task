@@ -3,17 +3,41 @@
 
 var App = React.createClass({
     getInitialState: function() {
-        return PersonApi.list();
+        return {
+            persons: PersonApi.list(),
+            err: {}
+        };
+    },
+
+    personIsValid: function(person) {
+
     },
 
     savePerson: function(e) {
-        console.log(e);
+        e.preventDefault();
+        var form = this.refs.personForm.refs.personData.getDOMNode();
+        var person = {
+            firstName: form.firstName.value,
+            lastName: form.lastName.value,
+            phone: form.phone.value,
+            gender: form.gender.value,
+            age: form.age.value
+        };
+
+        if (!this.personIsValid(person)) {
+            return;
+        }
+
+        var persons = PersonApi.save(person);
+        this.setState({
+           persons: PersonApi.list()
+        });
     },
 
     render: function() {
         return (
             <div className="container">
-              <PersonForm savePerson={this.savePerson} ref='person_form'/>
+              <PersonForm ref="personForm" savePerson={this.savePerson} />
               <PersonsList persons={this.state.persons} />
             </div>
         )
@@ -30,6 +54,7 @@ var PersonsList = React.createClass({
                     <td>{person.phone}</td>
                     <td>{person.gender}</td>
                     <td>{person.age}</td>
+                    <td><button className="btn btn-danger">delete</button></td>
                 </tr>
             )
         });
@@ -78,7 +103,7 @@ var PersonForm = React.createClass({
                        name = 'age'
                        label = 'Age'
                    />
-                   <input type="submit" onClick={this.props.savePerson(this)} value="add" className="btn btn-success"></input>
+                   <input type="submit" onClick={this.props.savePerson} value="add" className="btn btn-success"></input>
                </form>
            </div>
         )
@@ -86,11 +111,28 @@ var PersonForm = React.createClass({
 });
 
 var TextInput = React.createClass({
+    propsTypes: {
+        name: React.PropTypes.string.isRequired,
+        label: React.PropTypes.string.isRequired,
+        err: React.PropTypes.string
+    },
+
     render: function() {
+        var wraperClass = "form-group";
+
+        if (this.props.err && this.props.err.length >= 1) {
+            wraperClass += " " + "has-error";
+        }
+
         return (
-            <div>
+            <div className={wraperClass}>
                 <label for={this.props.name}  class="col-sm-2 control-label">{this.props.label}</label>
-                <input type="text" name={this.props.name} className="form-control input-small"></input>
+                <div className="field">
+                    <input type="text"
+                        name={this.props.name}
+                        placeholder={this.props.label}
+                        className="form-control input-small"/>
+                </div>
             </div>
         )
     }
