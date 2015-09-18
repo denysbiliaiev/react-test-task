@@ -5,12 +5,20 @@ var App = React.createClass({
     getInitialState: function() {
         return {
             persons: PersonApi.list(),
-            err: {}
+            validate_errors: {}
         };
     },
 
-    personIsValid: function(person) {
+    deletePerson: function(index) {
+        var persons = this.state.persons.filter(function(person, i) {
+            return index !== i;
+        });
 
+        this.setState({
+            persons: persons
+        });
+
+        PersonApi.delete(index);
     },
 
     savePerson: function(e) {
@@ -23,8 +31,8 @@ var App = React.createClass({
             gender: form.gender.value,
             age: form.age.value
         };
-
-        if (!this.personIsValid(person)) {
+        PersonValidator.validate.call(this, person);
+        if (!PersonValidator.validate.bind(this, person)) {
             return;
         }
 
@@ -37,8 +45,8 @@ var App = React.createClass({
     render: function() {
         return (
             <div className="container">
-              <PersonForm ref="personForm" savePerson={this.savePerson} />
-              <PersonsList persons={this.state.persons} />
+              <PersonForm ref="personForm" validate_errors={this.state.validate_errors} savePerson={this.savePerson} />
+              <PersonsList persons={this.state.persons} deletePerson={this.deletePerson} />
             </div>
         )
     }
@@ -48,16 +56,9 @@ var PersonsList = React.createClass({
     render: function() {
         var list = this.props.persons.map(function(person, i) {
             return (
-                <tr>
-                    <td>{person.firstName}</td>
-                    <td>{person.lastName}</td>
-                    <td>{person.phone}</td>
-                    <td>{person.gender}</td>
-                    <td>{person.age}</td>
-                    <td><button className="btn btn-danger">delete</button></td>
-                </tr>
+                <Person key={i} person={person} ref={"item" + i} deletePerson={this.props.deletePerson.bind(this, i)}/>
             )
-        });
+        }, this);
 
         return (
             <div id="persons_list">
@@ -78,6 +79,21 @@ var PersonsList = React.createClass({
     }
 });
 
+var Person = React.createClass({
+    render: function() {
+        return (
+            <tr>
+                <td>{this.props.person.firstName}</td>
+                <td>{this.props.person.lastName}</td>
+                <td>{this.props.person.phone}</td>
+                <td>{this.props.person.gender}</td>
+                <td>{this.props.person.age}</td>
+                <td><button onClick={this.props.deletePerson} className="btn btn-danger">delete</button></td>
+            </tr>
+        )
+    }
+});
+
 var PersonForm = React.createClass({
     render: function() {
         return (
@@ -86,22 +102,27 @@ var PersonForm = React.createClass({
                    <TextInput
                        name = 'firstName'
                        label = 'First Name'
+                       validate_error = {this.props.validate_errors.firstName}
                    />
                    <TextInput
                        name = 'lastName'
                        label = 'Last Name'
+                       validate_error = {this.props.validate_errors.lastName}
                    />
                    <TextInput
                        name = 'phone'
                        label = 'Phone'
+                       validate_error = {this.props.validate_errors.phone}
                    />
                    <TextInput
                        name = 'gender'
                        label = 'Gender'
+                       validate_error = {this.props.validate_errors.gender}
                    />
                    <TextInput
                        name = 'age'
                        label = 'Age'
+                       validate_error = {this.props.validate_errors.age}
                    />
                    <input type="submit" onClick={this.props.savePerson} value="add" className="btn btn-success"></input>
                </form>
@@ -132,6 +153,7 @@ var TextInput = React.createClass({
                         name={this.props.name}
                         placeholder={this.props.label}
                         className="form-control input-small"/>
+                    <div>{this.props.validate_error}</div>
                 </div>
             </div>
         )

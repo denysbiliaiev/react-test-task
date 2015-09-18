@@ -1,10 +1,7 @@
 var PersonApi = {
 
   data: {
-    "persons": [
-      {"firstName": "vasya", "lastName": "rebzia", "phone": "094575757", "gender": "m", "age": "10"},
-      {"firstName": "vasya1", "lastName": "rebzia1", "phone": "194575757", "gender": "g", "age": "7"}
-    ]
+    "persons": []
   },
 
   list: function() {
@@ -14,5 +11,9 @@ var PersonApi = {
   save: function(person) {
     this.data.persons.push(person);
     return this.data.persons;
+  },
+
+  delete: function(index) {
+    this.data.persons.splice(index, 1);
   }
 };
