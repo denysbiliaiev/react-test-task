@@ -4,9 +4,50 @@
 var App = React.createClass({
     getInitialState: function() {
         return {
-            persons: PersonApi.list(),
+            persons: [],
             validate_errors: {}
         };
+    },
+
+    shouldComponentUpdate: function() {
+        return true;
+    },
+
+    componentDidMount: function() {
+      var persons = PersonApi.list();
+      this.setState({persons: persons});
+    },
+
+    sortField: '',
+    sortMode: true,
+
+    //compare: function(a, b) {
+    //    console.log('-' + this.sortMode);
+    //    this.sortMode = !this.sortMode;
+    //    if (a[this.sortField] > b[this.sortField]) {
+    //        return 1 * this.sortMode;
+    //    }
+    //
+    //    if (a[this.sortField] < b[this.sortField]) {
+    //        return -1 * this.sortMode;
+    //    }
+    //
+    //    return 0;
+    //},
+
+    sortPersons: function(e) {
+        this.sortMode = !this.sortMode;
+        this.sortField = e.target.id;
+
+        //var persons = PersonApi.list().sort(this.compare);
+
+        if (this.sortMode) {
+            var persons = _.sortBy(PersonApi.list(), this.sortField);
+        } else {
+            var persons = _.sortBy(PersonApi.list(), this.sortField).reverse();
+        }
+
+        this.setState({persons: persons});
     },
 
     deletePerson: function(index) {
@@ -31,8 +72,8 @@ var App = React.createClass({
             gender: form.gender.value,
             age: form.age.value
         };
-        PersonValidator.validate.call(this, person);
-        if (!PersonValidator.validate.bind(this, person)) {
+
+        if (!Validator.validate.call(this, person)) {
             return;
         }
 
@@ -42,11 +83,34 @@ var App = React.createClass({
         });
     },
 
+    validate_field : {
+        firstName: {
+            regex: /^[a-z]{1,10}$/,
+            msg: "not valid"
+        },
+        lastName: {
+            regex: /^[a-z]{1,10}$/,
+            msg: "not valid"
+        },
+        phone: {
+            regex: /^\d{1,10}$/,
+            msg: "not valid"
+        },
+        gender: {
+            enum: ["man", "woman"],
+            msg: "not valid"
+        },
+        age: {
+            regex: /^\d{1,2}$/,
+            msg: "not valid"
+        }
+    },
+
     render: function() {
         return (
             <div className="container">
-              <PersonForm ref="personForm" validate_errors={this.state.validate_errors} savePerson={this.savePerson} />
-              <PersonsList persons={this.state.persons} deletePerson={this.deletePerson} />
+              <PersonForm ref="personForm" savePerson={this.savePerson} validate_errors={this.state.validate_errors} />
+              <PersonsList persons={this.state.persons} deletePerson={this.deletePerson} sortPersons={this.sortPersons}/>
             </div>
         )
     }
@@ -63,12 +127,12 @@ var PersonsList = React.createClass({
         return (
             <div id="persons_list">
                 <table className="table">
-                    <thead>
-                        <th>First Name</th>
-                        <th>Last Name</th>
-                        <th>Phone</th>
-                        <th>Gender</th>
-                        <th>Age</th>
+                    <thead onClick={this.props.sortPersons}>
+                        <th id="firstName">First Name</th>
+                        <th id="lastName">Last Name</th>
+                        <th id="phone">Phone</th>
+                        <th id="gender">Gender</th>
+                        <th id="age">Age</th>
                     </thead>
                     <tbody>
                         {list}
